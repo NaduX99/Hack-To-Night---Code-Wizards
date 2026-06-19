@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Nova Bank Project Report</title>
+    <style>
+      @page {
+        margin: 16mm;
+      }
+
+      body {
+        color: #111827;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        line-height: 1.52;
+      }
+
+      h1 {
+        border-bottom: 4px solid #059669;
+        color: #064e3b;
+        font-size: 28px;
+        margin: 0 0 8px;
+        padding-bottom: 8px;
+      }
+
+      h2 {
+        color: #065f46;
+        font-size: 18px;
+        margin: 24px 0 8px;
+      }
+
+      h3 {
+        color: #111827;
+        font-size: 14px;
+        margin: 16px 0 4px;
+      }
+
+      code {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 4px;
+        color: #064e3b;
+        font-family: Consolas, Monaco, monospace;
+        padding: 1px 4px;
+      }
+
+      table {
+        border-collapse: collapse;
+        margin-top: 8px;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border: 1px solid #d1d5db;
+        padding: 7px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #d1fae5;
+        color: #064e3b;
+      }
+
+      ul {
+        margin-top: 6px;
+        padding-left: 18px;
+      }
+
+      .meta {
+        color: #4b5563;
+        margin-bottom: 18px;
+      }
+
+      .summary {
+        background: #ecfdf5;
+        border-left: 5px solid #10b981;
+        margin: 14px 0 18px;
+        padding: 10px 12px;
+      }
+
+      .tag {
+        background: #064e3b;
+        border-radius: 999px;
+        color: white;
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        margin-right: 5px;
+        padding: 2px 7px;
+        text-transform: uppercase;
+      }
+
+      .ok {
+        color: #047857;
+        font-weight: 700;
+      }
+
+      .warn {
+        color: #b45309;
+        font-weight: 700;
+      }
+
+      .page-break {
+        break-before: page;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Nova Bank Project Report</h1>
+    <p class="meta">
+      Project: Hack-To-Night 2026 Challenge / Nova Bank<br>
+      Stack: Next.js 16, React 19, Tailwind CSS, MySQL, Firebase, Nodemailer, Biome<br>
+      Report output: <code>reports/project-report.html</code> and <code>reports/project-report.pdf</code>
+    </p>
+
+    <div class="summary">
+      <strong>Summary:</strong> This report documents the project functions, new features added,
+      errors found during development, how those errors were solved, and the tools/methods used
+      to verify the application.
+    </div>
+
+    <h2>1. Project Overview</h2>
+    <p>
+      Nova Bank is a digital banking web application with public landing pages, account
+      authentication, customer dashboard features, bank transfer flows, bill payments,
+      savings goals, e-statements, profile/settings management, notifications, and an AI
+      banking assistant.
+    </p>
+
+    <h2>2. Main Project Functions</h2>
+    <table>
+      <tr><th>Area</th><th>Functionality</th><th>Main Routes</th></tr>
+      <tr>
+        <td>Public landing</td>
+        <td>Modern marketing landing page, animated hero, colorful banking carousel, footer navigation.</td>
+        <td><code>/</code></td>
+      </tr>
+      <tr>
+        <td>Authentication</td>
+        <td>Username/password login, signup, reset password page, logout, current user lookup, Google/Firebase login support.</td>
+        <td><code>/login</code>, <code>/sign-up</code>, <code>/reset-password</code></td>
+      </tr>
+      <tr>
+        <td>Dashboard</td>
+        <td>Total balance, monthly spend, category chart, recent transactions, payees, shortcuts.</td>
+        <td><code>/dashboard</code></td>
+      </tr>
+      <tr>
+        <td>Accounts</td>
+        <td>View, create, update, and manage bank accounts.</td>
+        <td><code>/bank-accounts</code>, <code>/accounts</code></td>
+      </tr>
+      <tr>
+        <td>Transfers</td>
+        <td>Send money, validate account/PIN information, save beneficiaries, transaction history.</td>
+        <td><code>/bank-transfer</code></td>
+      </tr>
+      <tr>
+        <td>Bill payments</td>
+        <td>Pay supported billers and record payment status/history.</td>
+        <td><code>/pay-bills</code></td>
+      </tr>
+      <tr>
+        <td>Smart Spend</td>
+        <td>Spending insights, budget targets, account summaries, recent bills, currency rates.</td>
+        <td><code>/smart-spend</code></td>
+      </tr>
+      <tr>
+        <td>Savings goals</td>
+        <td>Create goals, update targets, track saved amount and daily saving plan.</td>
+        <td><code>/savings-goals</code></td>
+      </tr>
+      <tr>
+        <td>E-statement</td>
+        <td>Generate account statement preview and transaction details by account number.</td>
+        <td><code>/e-statement</code></td>
+      </tr>
+      <tr>
+        <td>Profile/settings</td>
+        <td>Edit profile, avatar, email, NIC, and local UI preferences.</td>
+        <td><code>/profile</code>, <code>/settings</code></td>
+      </tr>
+      <tr>
+        <td>Notifications</td>
+        <td>Read email notification queue records, status, subject, body, and dates.</td>
+        <td><code>/notifications</code></td>
+      </tr>
+      <tr>
+        <td>AI assistant</td>
+        <td>Floating chatbot and full chatbot page for banking help.</td>
+        <td><code>/chatbot</code></td>
+      </tr>
+    </table>
+
+    <h2>3. API Functions</h2>
+    <table>
+      <tr><th>API</th><th>Methods</th><th>Purpose</th></tr>
+      <tr><td><code>/api/auth/login</code></td><td>POST</td><td>Authenticate user with username/password.</td></tr>
+      <tr><td><code>/api/auth/logout</code></td><td>POST</td><td>Clear session cookie.</td></tr>
+      <tr><td><code>/api/auth/me</code></td><td>GET</td><td>Return current authenticated user.</td></tr>
+      <tr><td><code>/api/auth/signup</code></td><td>POST</td><td>Create new customer account.</td></tr>
+      <tr><td><code>/api/auth/firebase</code></td><td>POST</td><td>Login using Firebase/Google ID token.</td></tr>
+      <tr><td><code>/api/accounts</code></td><td>GET/POST/PUT/DELETE</td><td>Manage bank accounts.</td></tr>
+      <tr><td><code>/api/transfer</code></td><td>POST</td><td>Execute transfers.</td></tr>
+      <tr><td><code>/api/beneficiaries</code></td><td>GET/POST/DELETE</td><td>Manage saved payees.</td></tr>
+      <tr><td><code>/api/bill-payments</code></td><td>POST</td><td>Record bill payment requests.</td></tr>
+      <tr><td><code>/api/transactions</code></td><td>GET</td><td>Return account transaction history.</td></tr>
+      <tr><td><code>/api/statement</code></td><td>GET</td><td>Build statement data by account number.</td></tr>
+      <tr><td><code>/api/smart-spend</code></td><td>GET/POST/PUT</td><td>Insights and budget target management.</td></tr>
+      <tr><td><code>/api/savings-goals</code></td><td>GET/POST/PUT/DELETE</td><td>Savings goal CRUD operations.</td></tr>
+      <tr><td><code>/api/profile</code></td><td>GET/PUT</td><td>Profile read/update and notification queueing.</td></tr>
+      <tr><td><code>/api/notifications</code></td><td>GET</td><td>Read notification queue records.</td></tr>
+      <tr><td><code>/api/chatbot</code></td><td>POST</td><td>AI assistant request handling.</td></tr>
+      <tr><td><code>/api/health</code></td><td>GET</td><td>Service health check.</td></tr>
+      <tr><td><code>/api/setup</code></td><td>GET</td><td>Database setup/boot support.</td></tr>
+      <tr><td><code>/api/admin/system</code></td><td>GET</td><td>Admin-only system data.</td></tr>
+      <tr><td><code>/api/search</code></td><td>GET</td><td>Search endpoint.</td></tr>
+    </table>
+
+    <h2 class="page-break">4. New Features Added</h2>
+    <table>
+      <tr><th>Feature</th><th>What Was Added</th><th>Files/Areas</th></tr>
+      <tr>
+        <td>Modern landing page</td>
+        <td>Rebuilt landing from simple centered content into a premium hero with animated visual cards and green/cyan/amber accents.</td>
+        <td><code>app/page.tsx</code>, <code>app/globals.css</code></td>
+      </tr>
+      <tr>
+        <td>Large carousel</td>
+        <td>Converted the standalone carousel idea into a reusable React carousel using local assets and a larger 3D rotating ring.</td>
+        <td><code>components/carousel.tsx</code></td>
+      </tr>
+      <tr>
+        <td>Scroll animations</td>
+        <td>Added global scroll reveal behavior for sections, cards, forms, and landing elements.</td>
+        <td><code>components/scroll-animations.tsx</code>, <code>app/layout.tsx</code></td>
+      </tr>
+      <tr>
+        <td>Settings page</td>
+        <td>Added protected settings page with profile details, avatar selection, notification preferences, and security status.</td>
+        <td><code>app/settings/page.tsx</code></td>
+      </tr>
+      <tr>
+        <td>Notifications page</td>
+        <td>Added protected page that reads from <code>/api/notifications</code>, with loading, empty, and error states.</td>
+        <td><code>app/notifications/page.tsx</code></td>
+      </tr>
+      <tr>
+        <td>Navigation/protection</td>
+        <td>Updated sidebar and route protection for settings and notifications.</td>
+        <td><code>components/sidebar.tsx</code>, <code>proxy.ts</code></td>
+      </tr>
+      <tr>
+        <td>Footer</td>
+        <td>Added a full landing footer with product/account/support links.</td>
+        <td><code>app/page.tsx</code></td>
+      </tr>
+    </table>
+
+    <h2>5. Errors Found and Solutions</h2>
+    <table>
+      <tr><th>Error / Issue</th><th>Cause</th><th>Solution</th></tr>
+      <tr>
+        <td>Standalone <code>carosel</code> folder was not integrated</td>
+        <td>It contained plain HTML/CSS and referenced missing <code>assets/*</code> images with unrelated Marvel content.</td>
+        <td>Recreated the carousel as a React component using existing banking images from <code>public/</code>.</td>
+      </tr>
+      <tr>
+        <td>Missing protected routes for new pages</td>
+        <td><code>/settings</code> and <code>/notifications</code> were not listed in the route guard.</td>
+        <td>Added both to <code>protectedPages</code> and middleware matcher in <code>proxy.ts</code>.</td>
+      </tr>
+      <tr>
+        <td>Notifications UI missing</td>
+        <td>The API existed but no user-facing page was present.</td>
+        <td>Created <code>/notifications</code> page with refresh, empty, loading, and error handling.</td>
+      </tr>
+      <tr>
+        <td>Settings UI missing</td>
+        <td>Profile page existed, but there was no dedicated settings page.</td>
+        <td>Created <code>/settings</code> page and reused <code>/api/profile</code> for data updates.</td>
+      </tr>
+      <tr>
+        <td>Biome formatting/import errors</td>
+        <td>Manual file edits created formatting and import-order differences.</td>
+        <td>Ran <code>npx biome format --write</code> on touched files and verified with <code>npm run lint</code>.</td>
+      </tr>
+      <tr>
+        <td>UTF-8/mojibake text such as <code>Â©</code></td>
+        <td>PowerShell write encoding produced incorrect display for special characters.</td>
+        <td>Rewrote affected files with UTF-8 without BOM and changed footer copy to ASCII-safe text.</td>
+      </tr>
+      <tr>
+        <td>TypeScript error: missing <code>CSSProperties</code></td>
+        <td>Carousel inline custom CSS variables needed a type import.</td>
+        <td>Added <code>import type { CSSProperties } from 'react'</code>.</td>
+      </tr>
+      <tr>
+        <td><code>npm</code> not valid Win32 app when starting server</td>
+        <td>Windows requires the command shim for background launch.</td>
+        <td>Used <code>npm.cmd</code> for <code>Start-Process</code>.</td>
+      </tr>
+      <tr>
+        <td><code>spawn EPERM</code> during build/dev in sandbox</td>
+        <td>Windows sandbox blocked process spawning for Next workers.</td>
+        <td>Reran build/dev with scoped elevated approval. Build completed successfully.</td>
+      </tr>
+      <tr>
+        <td>Landing hero looked too plain/centered</td>
+        <td>Original hero was mostly text-centered with limited visual hierarchy.</td>
+        <td>Rebuilt hero with asymmetric layout, animated finance cards, scan line, grid, and gradient headline.</td>
+      </tr>
+    </table>
+
+    <h2>6. Methods and Tools Used</h2>
+    <table>
+      <tr><th>Tool / Method</th><th>Usage</th></tr>
+      <tr><td><code>rg</code></td><td>Fast file and text search for routes, APIs, existing components, and styles.</td></tr>
+      <tr><td>PowerShell</td><td>Read files, run checks, inspect process/server status, and export PDF.</td></tr>
+      <tr><td><code>apply_patch</code></td><td>Created new report and component files safely.</td></tr>
+      <tr><td>Biome</td><td>Formatting and static checks via <code>npm run lint</code>.</td></tr>
+      <tr><td>Next build</td><td>Production validation via <code>npm run build</code>.</td></tr>
+      <tr><td>Microsoft Edge headless print</td><td>Exported the HTML report to PDF.</td></tr>
+      <tr><td>Manual route review</td><td>Mapped all pages and APIs from the filesystem and <code>app/api/route.ts</code>.</td></tr>
+    </table>
+
+    <h2>7. Testing and Verification</h2>
+    <ul>
+      <li><span class="ok">Passed:</span> <code>npm run lint</code> using Biome.</li>
+      <li><span class="ok">Passed:</span> <code>npm run build</code> after approved elevated run because sandbox build hit <code>spawn EPERM</code>.</li>
+      <li><span class="ok">Passed:</span> Dev server responded with HTTP 200 at <code>http://localhost:3000</code>.</li>
+      <li><span class="ok">Checked:</span> New protected routes are included in <code>proxy.ts</code>.</li>
+      <li><span class="ok">Checked:</span> Landing page, carousel, settings, and notifications compile in production build.</li>
+    </ul>
+
+    <h2>8. Future Improvements</h2>
+    <ul>
+      <li>Add automated UI tests for login, dashboard, transfer, settings, and notifications.</li>
+      <li>Add persistent user preference storage for settings toggles.</li>
+      <li>Add read/unread status and actions to notifications.</li>
+      <li>Add real charting library for spending analytics if the project grows.</li>
+      <li>Add accessibility audit for color contrast, keyboard focus, and reduced-motion behavior.</li>
+      <li>Replace demo seed data with environment-specific fixtures for production readiness.</li>
+    </ul>
+
+    <h2>9. Final Status</h2>
+    <p>
+      The project now has a stronger public landing experience, larger banking carousel,
+      protected settings and notifications pages, route protection updates, global animation
+      support, and verified production build output.
+    </p>
+  </body>
+</html>
