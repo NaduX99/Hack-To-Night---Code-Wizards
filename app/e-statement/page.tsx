@@ -67,7 +67,7 @@ export default function EStatementPage() {
   const summary = statement?.summary
 
   return (
-    <div className="min-h-screen bg-bg-light font-geist p-0">
+    <div className="e-statement-page min-h-screen bg-bg-light font-geist p-0">
       <div className="flex min-h-screen">
         <Sidebar />
 
