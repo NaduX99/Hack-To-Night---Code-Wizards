@@ -150,7 +150,7 @@ export async function POST(request: Request) {
       auth.user.id,
       auth.user.email || '',
       'Nova Bank bill payment completed',
-      `Bill payment completed.
+      `Bill payment completed successfully.
 
 Account: ${accountNumber}
 Biller: ${billerName}
@@ -159,7 +159,16 @@ Amount: Rs. ${amount.toFixed(2)}
 Category: ${category || 'Bills'}
 Purpose: ${purpose}
 Available balance: Rs. ${result.availableBalance.toFixed(2)}
-Reference: ${result.payment.id}`
+Reference: BILL-${result.payment.id}
+Status: SUCCESS`,
+      {
+        badge: 'Bill paid',
+        headline: 'Your bill payment was successful',
+        preheader: `Rs. ${amount.toFixed(2)} was paid to ${billerName}.`,
+        tone: 'transaction',
+        actionLabel: 'View notifications',
+        actionUrl: '/notifications'
+      }
     )
     await audit('bill_payment.create', {
       userId: auth.user.id,

@@ -127,14 +127,23 @@ export async function GET(request: Request) {
     await queueEmail(
       auth.user.id,
       auth.user.email || '',
-      'Nova Bank e-statement requested',
-      `Your e-statement for account ${accountNumber} was generated successfully.
+      'Nova Bank e-statement generated',
+      `Your e-statement was generated successfully.
 
+Account: ${accountNumber}
 Opening balance: Rs. ${openingBalance.toFixed(2)}
 Total credits: Rs. ${totalCredits.toFixed(2)}
 Total debits: Rs. ${totalDebits.toFixed(2)}
 Closing balance: Rs. ${closingBalance.toFixed(2)}
-Transactions: ${rows.length}`
+Transactions: ${rows.length}`,
+      {
+        badge: 'E-statement ready',
+        headline: 'Your account statement is ready',
+        preheader: `Statement summary for account ${accountNumber}.`,
+        tone: 'notice',
+        actionLabel: 'Open e-statement',
+        actionUrl: '/e-statement'
+      }
     )
     await audit('statement.generate', { userId: auth.user.id, accountNumber })
 

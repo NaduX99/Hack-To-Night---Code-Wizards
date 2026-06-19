@@ -18,6 +18,14 @@ const mysqlPool = mysql.createPool({
 })
 
 type QueryValue = string | number | boolean | null
+type EmailOptions = {
+  preheader?: string
+  headline?: string
+  badge?: string
+  tone?: 'security' | 'welcome' | 'transaction' | 'notice'
+  actionLabel?: string
+  actionUrl?: string
+}
 const base32Alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 export type AuthUser = {
@@ -333,7 +341,8 @@ export async function queueEmail(
   userId: number | null,
   email: string,
   subject: string,
-  body: string
+  body: string,
+  options: EmailOptions = {}
 ) {
   if (!email) return
 
@@ -351,7 +360,7 @@ export async function queueEmail(
   if (!process.env.SMTP_HOST) return
 
   try {
-    await sendEmail(email, subject, body)
+    await sendEmail(email, subject, body, options)
     await pool.query('UPDATE email_notifications SET status = ? WHERE id = ?', [
       'sent',
       inserted.insertId
@@ -644,7 +653,64 @@ function decodeBase32(secret: string) {
   return Buffer.from(bytes)
 }
 
-async function sendEmail(to: string, subject: string, body: string) {
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function buildEmailHtml(subject: string, body: string, options: EmailOptions) {
+  const tone = options.tone || 'notice'
+  const accent =
+    tone === 'welcome'
+      ? '#34d399'
+      : tone === 'transaction'
+        ? '#22d3ee'
+        : tone === 'security'
+          ? '#fbbf24'
+          : '#34d399'
+  const badge = escapeHtml(options.badge || 'Nova Bank')
+  const headline = escapeHtml(options.headline || subject)
+  const preheader = escapeHtml(
+    options.preheader || 'A secure update from your Nova Bank account.'
+  )
+  const rows = body
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const separator = line.indexOf(':')
+      if (separator > 0 && separator < 36) {
+        const label = escapeHtml(line.slice(0, separator))
+        const value = escapeHtml(line.slice(separator + 1).trim())
+        return `<tr><td style="padding:10px 14px;color:#8aa39c;font-size:12px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid rgba(52,211,153,.14);">${label}</td><td style="padding:10px 14px;color:#ecfeff;font-weight:700;text-align:right;border-bottom:1px solid rgba(52,211,153,.14);">${value}</td></tr>`
+      }
+
+      return `<p style="margin:0 0 14px;color:#cde8e1;font-size:15px;line-height:1.7;">${escapeHtml(line)}</p>`
+    })
+
+  const detailRows = rows.filter((row) => row.startsWith('<tr>')).join('')
+  const paragraphs = rows.filter((row) => row.startsWith('<p')).join('')
+  const actionUrl = options.actionUrl?.startsWith('/')
+    ? `${process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000'}${options.actionUrl}`
+    : options.actionUrl
+  const action =
+    options.actionLabel && actionUrl
+      ? `<a href="${escapeHtml(actionUrl)}" style="display:inline-block;margin-top:22px;padding:13px 22px;border-radius:999px;background:${accent};color:#04130f;text-decoration:none;font-weight:800;">${escapeHtml(options.actionLabel)}</a>`
+      : ''
+
+  return `<!doctype html><html><body style="margin:0;background:#06130f;font-family:Inter,Segoe UI,Arial,sans-serif;color:#ecfeff;"><div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:linear-gradient(135deg,#06130f,#082c34 52%,#06130f);padding:32px 12px;"><tr><td align="center"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;border:1px solid rgba(52,211,153,.22);border-radius:24px;overflow:hidden;background:rgba(8,28,22,.92);box-shadow:0 28px 80px rgba(0,0,0,.35);"><tr><td style="padding:28px 30px;background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(34,211,238,.12));"><div style="display:inline-block;border-radius:999px;background:rgba(52,211,153,.14);color:${accent};padding:7px 12px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;">${badge}</div><h1 style="margin:18px 0 0;color:#ffffff;font-size:30px;line-height:1.15;font-weight:800;">${headline}</h1><p style="margin:10px 0 0;color:#b7d8d0;font-size:14px;line-height:1.6;">${preheader}</p></td></tr><tr><td style="padding:30px;">${paragraphs}${detailRows ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:8px;border:1px solid rgba(52,211,153,.16);border-radius:16px;overflow:hidden;background:rgba(6,19,15,.76);">${detailRows}</table>` : ''}${action}<p style="margin:26px 0 0;color:#8aa39c;font-size:12px;line-height:1.6;">This email was sent for your security. Nova Bank will never ask for your password, PIN, or one-time code by email.</p></td></tr><tr><td style="padding:18px 30px;background:rgba(5,19,16,.9);color:#7fb5aa;font-size:12px;">Nova Bank &bull; Secure digital banking</td></tr></table></td></tr></table></body></html>`
+}
+
+async function sendEmail(
+  to: string,
+  subject: string,
+  body: string,
+  options: EmailOptions = {}
+) {
   const port = Number(process.env.SMTP_PORT || 587)
   const user = process.env.SMTP_USER || ''
   const pass = process.env.SMTP_PASSWORD || ''
@@ -660,6 +726,7 @@ async function sendEmail(to: string, subject: string, body: string) {
     from: process.env.SMTP_FROM || user,
     to,
     subject,
-    text: body
+    text: body,
+    html: buildEmailHtml(subject, body, options)
   })
 }

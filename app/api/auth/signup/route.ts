@@ -121,8 +121,25 @@ export async function POST(request: Request) {
     await queueEmail(
       user.id,
       user.email,
-      'Nova Bank account created',
-      `Welcome ${user.full_name}. Your Nova Bank profile and bank account ${accountNumber} were created successfully with Rs. 100,000.00 test balance.`
+      'Welcome to Nova Bank',
+      `Welcome ${user.full_name}.
+
+Your Nova Bank profile and first account are ready.
+
+Account number: ${accountNumber}
+Username: ${user.username}
+Opening balance: Rs. 100,000.00
+Branch: ${branch}
+Next step: Sign in and review your dashboard, transfers, bills, savings goals, and notifications.`,
+      {
+        badge: 'Account created',
+        headline: 'Your Nova Bank account is ready',
+        preheader:
+          'Your registration is complete. Here are your new account details.',
+        tone: 'welcome',
+        actionLabel: 'Open dashboard',
+        actionUrl: '/dashboard'
+      }
     )
     await audit('user.signup', { userId: user.id, accountNumber })
 

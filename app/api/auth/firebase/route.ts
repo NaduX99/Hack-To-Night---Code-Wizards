@@ -52,6 +52,7 @@ export async function POST(request: Request) {
     )
 
     let user = existing.rows[0]
+    let createdAccount = false
 
     if (user) {
       await query(
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
         full_name: fullName,
         email
       }
+      createdAccount = true
     }
 
     const safeUser = {
@@ -90,11 +92,52 @@ export async function POST(request: Request) {
     const headers = new Headers()
     headers.append('set-cookie', createSessionCookie(safeUser))
 
+    if (createdAccount) {
+      await queueEmail(
+        safeUser.id,
+        safeUser.email || '',
+        'Welcome to Nova Bank',
+        `Welcome ${safeUser.full_name}.
+
+Your Nova Bank profile was created with Google sign-in.
+
+Login method: Google
+Email: ${safeUser.email || email}
+Username: ${safeUser.username}
+Next step: Add or review your banking accounts from the dashboard.`,
+        {
+          badge: 'Account created',
+          headline: 'Your Nova Bank profile is ready',
+          preheader:
+            'Your Google registration is complete. Welcome to Nova Bank.',
+          tone: 'welcome',
+          actionLabel: 'Open dashboard',
+          actionUrl: '/dashboard'
+        }
+      )
+    }
+
     await queueEmail(
       safeUser.id,
       safeUser.email || '',
       'Nova Bank Google login alert',
-      `Hello ${safeUser.full_name}. Your Nova Bank account was logged in using Google.`
+      `Hello ${safeUser.full_name}.
+
+Your Nova Bank account was logged in successfully.
+
+Login method: Google
+Email: ${safeUser.email || email}
+Time: ${new Date().toLocaleString('en-LK', { timeZone: 'Asia/Colombo' })}
+Security note: If this was not you, review your Google account access and Nova Bank settings.`,
+      {
+        badge: 'Google sign-in',
+        headline: 'New Google login to Nova Bank',
+        preheader:
+          'We noticed a successful Google login to your Nova Bank account.',
+        tone: 'security',
+        actionLabel: 'Review settings',
+        actionUrl: '/settings'
+      }
     )
     await audit('auth.firebase_login', {
       userId: safeUser.id,

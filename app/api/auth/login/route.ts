@@ -87,7 +87,23 @@ export async function POST(request: Request) {
       safeUser.id,
       safeUser.email || '',
       'Nova Bank login alert',
-      `Hello ${safeUser.full_name}. Your Nova Bank account was logged in successfully. If this was not you, change your password immediately.`
+      `Hello ${safeUser.full_name}.
+
+Your Nova Bank account was logged in successfully.
+
+Login method: Password
+Account: ${safeUser.username}
+Time: ${new Date().toLocaleString('en-LK', { timeZone: 'Asia/Colombo' })}
+Security note: If this was not you, change your password immediately from Settings.`,
+      {
+        badge: 'Security alert',
+        headline: 'New login to your Nova Bank account',
+        preheader:
+          'We noticed a successful password login to your Nova Bank account.',
+        tone: 'security',
+        actionLabel: 'Review settings',
+        actionUrl: '/settings'
+      }
     )
     await audit('auth.login', {
       userId: safeUser.id,

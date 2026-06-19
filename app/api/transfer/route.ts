@@ -174,15 +174,24 @@ export async function POST(request: Request) {
       auth.user.id,
       auth.user.email || '',
       'Nova Bank transfer completed',
-      `Transfer completed.
+      `Transfer completed successfully.
 
 From account: ${fromAccount}
 To account: ${toAccount}
-Beneficiary: ${toAccountName || 'beneficiary'}
+Beneficiary: ${toAccountName || 'Beneficiary'}
 Bank: ${bankName || 'External bank'}
 Amount: Rs. ${amount.toFixed(2)}
 Purpose: ${purpose}
-Reference: ${transaction.id}`
+Reference: TXN-${transaction.id}
+Status: SUCCESS`,
+      {
+        badge: 'Transfer completed',
+        headline: 'Your transfer was successful',
+        preheader: `Rs. ${amount.toFixed(2)} was sent from account ${fromAccount}.`,
+        tone: 'transaction',
+        actionLabel: 'View notifications',
+        actionUrl: '/notifications'
+      }
     )
     await audit('transfer.create', {
       userId: auth.user.id,
