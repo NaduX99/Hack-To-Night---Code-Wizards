@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Project Security Review</title>
+    <style>
+      @page {
+        margin: 18mm;
+      }
+
+      body {
+        color: #111827;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      h1 {
+        border-bottom: 3px solid #1f2937;
+        font-size: 26px;
+        margin: 0 0 8px;
+        padding-bottom: 8px;
+      }
+
+      h2 {
+        color: #111827;
+        font-size: 18px;
+        margin: 24px 0 8px;
+      }
+
+      h3 {
+        font-size: 14px;
+        margin: 16px 0 4px;
+      }
+
+      code {
+        background: #f3f4f6;
+        border-radius: 4px;
+        font-family: Consolas, Monaco, monospace;
+        padding: 1px 4px;
+      }
+
+      pre {
+        background: #f3f4f6;
+        border-left: 4px solid #6b7280;
+        font-family: Consolas, Monaco, monospace;
+        overflow-wrap: anywhere;
+        padding: 10px;
+        white-space: pre-wrap;
+      }
+
+      table {
+        border-collapse: collapse;
+        margin-top: 8px;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border: 1px solid #d1d5db;
+        padding: 7px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #e5e7eb;
+      }
+
+      .meta {
+        color: #4b5563;
+        margin-bottom: 18px;
+      }
+
+      .critical {
+        color: #991b1b;
+        font-weight: 700;
+      }
+
+      .high {
+        color: #b45309;
+        font-weight: 700;
+      }
+
+      .medium {
+        color: #1d4ed8;
+        font-weight: 700;
+      }
+
+      .ok {
+        color: #047857;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Project Security Review</h1>
+    <div class="meta">
+      Project: Hack-To-Night---Code-Wizards<br>
+      Review date: 2026-06-19<br>
+      Scope: API security, database wiring, exposed data, route mismatches, and basic validation checks.
+    </div>
+
+    <h2>Executive Summary</h2>
+    <p>
+      No hidden malware behavior such as system command execution, external downloaders, or suspicious background scripts
+      was found in the reviewed application code. The project does contain severe application security vulnerabilities,
+      mainly raw SQL string construction, unauthenticated sensitive endpoints, exposed secrets, and frontend/backend wiring
+      mismatches.
+    </p>
+
+    <h2>Critical Findings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Severity</th>
+          <th>Location</th>
+          <th>Issue</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="critical">Critical</td>
+          <td>app/api/auth/login/route.ts:25</td>
+          <td>Login SQL is built using raw user input.</td>
+          <td>Login bypass and database extraction through SQL injection.</td>
+        </tr>
+        <tr>
+          <td class="critical">Critical</td>
+          <td>app/api/auth/login/route.ts:3</td>
+          <td>GET /api/auth/login returns all users and plaintext passwords.</td>
+          <td>Credential disclosure to any visitor.</td>
+        </tr>
+        <tr>
+          <td class="critical">Critical</td>
+          <td>app/api/admin/system/route.ts:12</td>
+          <td>Admin endpoint returns cookies, process.env, users, accounts, and audit logs without auth.</td>
+          <td>Database password, session data, balances, and private user data can be leaked.</td>
+        </tr>
+        <tr>
+          <td class="critical">Critical</td>
+          <td>app/api/transfer/route.ts:12</td>
+          <td>Transfer API builds UPDATE and INSERT SQL from raw request body fields.</td>
+          <td>Unauthorized balance manipulation and SQL injection.</td>
+        </tr>
+        <tr>
+          <td class="high">High</td>
+          <td>app/api/transfer/route.ts:3</td>
+          <td>Transfer endpoint has no login or ownership check.</td>
+          <td>Any caller can move money between accounts.</td>
+        </tr>
+        <tr>
+          <td class="high">High</td>
+          <td>app/api/accounts/route.ts:7</td>
+          <td>includePins=true returns account PIN values.</td>
+          <td>PIN disclosure through a public query parameter.</td>
+        </tr>
+        <tr>
+          <td class="high">High</td>
+          <td>lib/platform-db.ts:117</td>
+          <td>Error responses include stack traces and DATABASE_URL.</td>
+          <td>Secret and internal implementation leakage.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Evidence Examples</h2>
+    <h3>SQL Injection in Login</h3>
+    <pre>WHERE username = '${username}' AND password = '${password}'</pre>
+    <p>
+      This must be replaced with parameterized queries such as <code>WHERE username = ? AND password = ?</code>.
+    </p>
+
+    <h3>Admin Data Exposure</h3>
+    <pre>return Response.json({
+  cookies,
+  env: process.env,
+  users: users.rows,
+  accounts: accounts.rows,
+  auditLogs: logs.rows
+})</pre>
+
+    <h2>Mismatch And Error Findings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>Mismatch</th>
+          <th>Recommended Fix</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>app/page.tsx:14</td>
+          <td>Home links to /accounts, but the actual page is /bank-accounts.</td>
+          <td>Change link to /bank-accounts or create an /accounts route.</td>
+        </tr>
+        <tr>
+          <td>app/(accounts)/login/page.tsx:79</td>
+          <td>Login form UI does not call /api/auth/login.</td>
+          <td>Add a submit handler that posts username and password.</td>
+        </tr>
+        <tr>
+          <td>app/bank-transfer/page.tsx:52</td>
+          <td>Transfer page simulates success and does not call /api/transfer.</td>
+          <td>Connect the form to the transfer API after the API is secured.</td>
+        </tr>
+        <tr>
+          <td>app/bank-accounts/page.tsx:200</td>
+          <td>Accounts page uses console.log and alert instead of the database API.</td>
+          <td>Fetch account data from /api/accounts and add secure create/update routes if needed.</td>
+        </tr>
+        <tr>
+          <td>package / Docker setup</td>
+          <td>bun.lock remains but Dockerfile uses npm/package-lock.</td>
+          <td>Remove bun.lock if the project now standardizes on npm.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Validation Results</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Check</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>npx tsc --noEmit</td>
+          <td class="ok">Passed</td>
+          <td>No TypeScript errors detected.</td>
+        </tr>
+        <tr>
+          <td>npm run lint</td>
+          <td class="ok">Passed</td>
+          <td>Biome check completes without errors after remediation.</td>
+        </tr>
+        <tr>
+          <td>npm run build</td>
+          <td class="ok">Passed</td>
+          <td>Next.js production build completes successfully.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>API Test Error Update</h2>
+    <p>
+      During PowerShell API testing, login requests returned
+      <code>{"ok":false,"message":"Username and password are required."}</code>
+      and curl printed <code>URL rejected: Port number was not a decimal number between 0 and 65535</code>.
+      The root cause was PowerShell quoting, not failed authentication. Backslash escaping does not work like Bash
+      inside PowerShell double-quoted strings, so the JSON body was split into invalid curl arguments.
+    </p>
+
+    <h3>Fixed Solution</h3>
+    <p>
+      The API now accepts both JSON and form-urlencoded request bodies. A ready-to-run PowerShell script was added:
+    </p>
+    <pre>powershell -ExecutionPolicy Bypass -File scripts/test-apis.ps1</pre>
+
+    <p>Manual PowerShell login test:</p>
+    <pre>curl.exe -c scripts/customer-cookies.txt -X POST http://localhost:3000/api/auth/login `
+  -H "Content-Type: application/x-www-form-urlencoded" `
+  --data-urlencode "username=dilara" `
+  --data-urlencode "password=password123"</pre>
+
+    <p>Manual JSON test using PowerShell-safe single quotes:</p>
+    <pre>curl.exe -c scripts/customer-cookies.txt -X POST http://localhost:3000/api/auth/login `
+  -H "Content-Type: application/json" `
+  -d '{"username":"dilara","password":"password123"}'</pre>
+
+    <h2>Remediation Status</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Original Finding</th>
+          <th>Status</th>
+          <th>Solution Applied</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Raw SQL injection risks</td>
+          <td class="ok">Fixed</td>
+          <td>Parameterized MySQL queries and transaction-safe transfer flow.</td>
+        </tr>
+        <tr>
+          <td>Public password and secret exposure</td>
+          <td class="ok">Fixed</td>
+          <td>Removed public user dump, environment leakage, stack traces, and database URL leakage.</td>
+        </tr>
+        <tr>
+          <td>Missing API authentication</td>
+          <td class="ok">Fixed</td>
+          <td>Signed HttpOnly session cookie with customer/admin checks.</td>
+        </tr>
+        <tr>
+          <td>PowerShell API test failures</td>
+          <td class="ok">Fixed</td>
+          <td>Added form body parsing and a dedicated API test script.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Recommended Fix Order</h2>
+    <ol>
+      <li>Remove public GET from login route or make it admin-only and never return passwords.</li>
+      <li>Replace all raw SQL interpolation with parameterized queries.</li>
+      <li>Remove /api/admin/system or protect it with real admin authentication.</li>
+      <li>Stop returning stack traces, DATABASE_URL, process.env, cookies, passwords, and PINs.</li>
+      <li>Add authentication and account ownership checks before any transfer.</li>
+      <li>Hash passwords with bcrypt/argon2 instead of storing plaintext values.</li>
+      <li>Connect frontend login, transfer, and account pages to secured API routes.</li>
+      <li>Run Biome formatting to fix import ordering.</li>
+    </ol>
+  </body>
+</html>
