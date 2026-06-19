@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+
+body {
+    margin: 0;
+    background-image: url('./assets/bg.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.banner {
+    width: 100%;
+    height: 100vh;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.banner .slider {
+    position: absolute;
+    top: 10%;
+    left: calc(50% - 100px);
+    width: 200px;
+    height: 250px;
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    animation: autoRun 20s linear infinite;
+    --quantity: 10;
+    z-index: 2;
+}
+
+@keyframes autoRun {
+    from {
+        transform: perspective(1000px) rotateX(-12deg) rotateY(0deg);
+    }
+
+    to {
+        transform: perspective(1000px) rotateX(-12deg) rotateY(360deg);
+    }
+}
+
+.banner .slider .item {
+    position: absolute;
+    inset: 0 0 0 0;
+    transform:
+        rotateY(calc((var(--position) - 1) * (360 / var(--quantity)) * 1deg)) translateZ(550px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.banner .slider .item img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.banner .content {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(1400px, 100vw);
+    height: max-content;
+    padding-bottom: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+    /* Make sure it appears above the background */
+    color: #fff;
+    /* Ensure text is visible */
+    pointer-events: none;
+    /* Let clicks pass through to slider if they overlap */
+}
+
+.banner .content h1 {
+    font-family: "Orbitron", sans-serif;
+    font-size: clamp(5rem, 10vw, 16rem);
+    /* Responsive giant text */
+    line-height: 1em;
+    margin: 0;
+    font-weight: 1000;
+    font-style: normal;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 2;
+    color: #e5dddac3;
+}
+
+.banner .content h1::after {
+    position: absolute;
+    inset: 0 0 0 0;
+    content: attr(data-content);
+    z-index: 2;
+}
+
+.banner .content .author {
+    font-family: "Orbitron", sans-serif;
+    text-align: right;
+    max-width: 200px;
+    pointer-events: auto;
+    /* Keep links clickable */
+}
+
+.author h2 {
+    font-size: 2rem;
+    margin: 0;
+    letter-spacing: 2px;
+    color: #d2dd2d;
+}
+
+.author p {
+    margin: 5px 0;
+    color: #ccc;
+    font-size: 1.1rem;
+}
+
+.author a {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 2px solid #fff;
+    transition: 0.3s;
+}
+
+.author a:hover {
+    color: #ff4500;
+    border-bottom-color: #ff4500;
+}
+
+.banner .content .model {
+    background-image: url('./assets/thanos.png');
+    width: 100%;
+    height: 75vh;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-size: auto 130%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    z-index: 1;
+}
