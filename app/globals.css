@@ -650,3 +650,223 @@ html {
     font-size: 10px;
   }
 }
+/* Colorful signed-in banking theme */
+body:has(.sidebar),
+body:has(.banking-shell) {
+  --signed-bg: #06130f;
+  --signed-panel: rgba(8, 28, 22, 0.82);
+  --signed-panel-strong: rgba(5, 19, 16, 0.92);
+  --signed-border: rgba(52, 211, 153, 0.2);
+  --signed-muted: rgba(207, 250, 254, 0.68);
+  --signed-green: #34d399;
+  --signed-cyan: #22d3ee;
+  --signed-amber: #fbbf24;
+  background:
+    linear-gradient(125deg, rgba(6, 19, 15, 0.98), rgba(7, 34, 44, 0.94) 48%, rgba(6, 19, 15, 0.98)),
+    linear-gradient(120deg, rgba(52, 211, 153, 0.16), transparent 34%),
+    linear-gradient(245deg, rgba(34, 211, 238, 0.13), transparent 42%),
+    linear-gradient(16deg, transparent 45%, rgba(251, 191, 36, 0.1));
+  color: #ecfeff;
+}
+
+body:has(.sidebar)::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(52, 211, 153, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+  background-size: 76px 76px;
+  content: '';
+  mask-image: linear-gradient(120deg, black, transparent 82%);
+}
+
+body:has(.sidebar) main,
+body:has(.sidebar) > div,
+body:has(.banking-shell) {
+  background: transparent !important;
+  color: #ecfeff !important;
+}
+
+body:has(.sidebar) main:not(.banking-shell),
+body:has(.sidebar) .bg-bg-light,
+body:has(.sidebar) [class*="bg-[#ededed]"],
+body:has(.sidebar) [class*="bg-[#f3f4f6]"] {
+  background: transparent !important;
+}
+
+body:has(.sidebar) .dashboard-card,
+body:has(.sidebar) .transfer-card,
+body:has(.sidebar) section[class*="bg-white"],
+body:has(.sidebar) article[class*="bg-white"],
+body:has(.sidebar) div[class*="bg-white"][class*="shadow"],
+body:has(.sidebar) form[class*="bg-white"],
+body:has(.sidebar) [class*="bg-neutral-100"],
+body:has(.sidebar) [class*="bg-gray-50"] {
+  background: linear-gradient(145deg, rgba(8, 28, 22, 0.88), rgba(8, 34, 43, 0.72)) !important;
+  border: 1px solid var(--signed-border) !important;
+  color: #ecfeff !important;
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(18px);
+}
+
+body:has(.sidebar) [class*="bg-black"]:not(.sidebar):not(button):not(a):not(span) {
+  background: linear-gradient(145deg, #06130f, #0b2b25 58%, #083344) !important;
+  border-color: rgba(52, 211, 153, 0.24) !important;
+}
+
+body:has(.sidebar) [class*="text-black"],
+body:has(.sidebar) main h1,
+body:has(.sidebar) main h2,
+body:has(.sidebar) main h3,
+body:has(.sidebar) main h4,
+body:has(.sidebar) .transfer-card,
+body:has(.sidebar) .transfer-card * {
+  color: #25a2a9 !important;
+}
+
+body:has(.sidebar) [class*="text-gray"],
+body:has(.sidebar) [class*="text-neutral"],
+body:has(.sidebar) [class*="text-zinc"],
+body:has(.sidebar) [class*="text-black/"] {
+  color: var(--signed-muted) !important;
+}
+
+body:has(.sidebar) input,
+body:has(.sidebar) select,
+body:has(.sidebar) textarea,
+body:has(.sidebar) .underline-input,
+body:has(.sidebar) .description-box {
+  background: rgba(5, 19, 16, 0.72) !important;
+  border-color: rgba(52, 211, 153, 0.26) !important;
+  color: #ecfeff !important;
+}
+
+body:has(.sidebar) input::placeholder,
+body:has(.sidebar) textarea::placeholder {
+  color: rgba(207, 250, 254, 0.48) !important;
+}
+
+body:has(.sidebar) input:focus,
+body:has(.sidebar) select:focus,
+body:has(.sidebar) textarea:focus,
+body:has(.sidebar) .underline-input:focus {
+  border-color: var(--signed-green) !important;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18) !important;
+}
+
+body:has(.sidebar) a[class*="bg-white"],
+body:has(.sidebar) button[class*="bg-white"],
+body:has(.sidebar) .next-btn,
+body:has(.sidebar) .transfer-btn,
+body:has(.sidebar) .success-btn {
+  background: linear-gradient(135deg, #34d399, #22d3ee) !important;
+  color: #04130f !important;
+  border: 0 !important;
+  box-shadow: 0 16px 34px rgba(52, 211, 153, 0.22) !important;
+}
+
+body:has(.sidebar) button[class*="bg-black"],
+body:has(.sidebar) a[class*="bg-black"] {
+  background: #34d399 !important;
+  color: #04130f !important;
+}
+
+body:has(.sidebar) .topbar-icon,
+body:has(.sidebar) .icon-btn {
+  background: rgba(52, 211, 153, 0.1) !important;
+  border: 1px solid rgba(52, 211, 153, 0.16) !important;
+  color: #a7f3d0 !important;
+}
+
+body:has(.sidebar) table {
+  color: #ecfeff;
+}
+
+body:has(.sidebar) thead,
+body:has(.sidebar) th {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: #a7f3d0 !important;
+}
+
+body:has(.sidebar) td,
+body:has(.sidebar) tr {
+  border-color: rgba(52, 211, 153, 0.14) !important;
+}
+
+body:has(.sidebar) .dashboard-card:hover,
+body:has(.sidebar) .transfer-card:hover {
+  border-color: rgba(52, 211, 153, 0.34) !important;
+  transform: translateY(-2px);
+}
+
+body:has(.sidebar) .floating-assistant-root [class*="bg-[#450043]"],
+body:has(.sidebar) .floating-assistant-root [class*="hover:bg-[#6a1767]"] {
+  background: #34d399 !important;
+  color: #04130f !important;
+}
+
+body:has(.sidebar) .floating-assistant-root [class*="text-[#450043]"] {
+  color: #047857 !important;
+}
+
+body:has(.sidebar) .success-check svg circle {
+  fill: #34d399;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:has(.sidebar) .dashboard-card:hover,
+  body:has(.sidebar) .transfer-card:hover {
+    transform: none;
+  }
+}
+/* E-statement keeps a printable paper look with clear black text. */
+body:has(.sidebar) .e-statement-page main,
+body:has(.sidebar) .e-statement-page main *,
+body:has(.sidebar) .e-statement-page table,
+body:has(.sidebar) .e-statement-page thead,
+body:has(.sidebar) .e-statement-page tbody,
+body:has(.sidebar) .e-statement-page tr,
+body:has(.sidebar) .e-statement-page th,
+body:has(.sidebar) .e-statement-page td,
+body:has(.sidebar) .e-statement-page dt,
+body:has(.sidebar) .e-statement-page dd {
+  color: #050505 !important;
+}
+
+body:has(.sidebar) .e-statement-page form,
+body:has(.sidebar) .e-statement-page section[aria-label="Bank statement preview"] {
+  background: #f7f7f3 !important;
+  border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  color: #050505 !important;
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.18) !important;
+}
+
+body:has(.sidebar) .e-statement-page section[aria-label="Bank statement preview"] {
+  background: #e7e7e7 !important;
+}
+
+body:has(.sidebar) .e-statement-page input {
+  background: transparent !important;
+  border-color: #050505 !important;
+  color: #050505 !important;
+  box-shadow: none !important;
+}
+
+body:has(.sidebar) .e-statement-page thead,
+body:has(.sidebar) .e-statement-page th {
+  background: transparent !important;
+  color: #050505 !important;
+}
+
+body:has(.sidebar) .e-statement-page tr,
+body:has(.sidebar) .e-statement-page td {
+  border-color: rgba(0, 0, 0, 0.22) !important;
+}
+
+body:has(.sidebar) .e-statement-page button[type="submit"] {
+  background: #06130f !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+}
