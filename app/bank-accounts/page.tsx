@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense, useEffect, useState } from 'react'
+import AccountCardPreview from '@/components/card'
 import { Bell, Search } from '@/components/Icons'
 import Sidebar from '@/components/sidebar'
 import styles from './accounts.module.css'
@@ -37,8 +38,10 @@ function AccountsPageContent() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Check if we're in edit mode from URL
-  const isEditMode = searchParams.get('mode') === 'edit'
+  // Check if we're in add/edit mode from URL
+  const requestedMode = searchParams.get('mode') || searchParams.get('screen')
+  const isAddMode = requestedMode === 'add'
+  const isEditMode = requestedMode === 'edit'
   const accountNumberParam = searchParams.get('accountNumber') || ''
   const nicknameParam = searchParams.get('nickname') || ''
   const accountNameParam = searchParams.get('accountName') || ''
@@ -79,8 +82,14 @@ function AccountsPageContent() {
     void loadAccounts()
   }, [])
 
-  // Load data if in edit mode
+  // Load data if the page is opened directly in add/edit mode
   useEffect(() => {
+    if (isAddMode) {
+      resetForm()
+      setScreen('add')
+      return
+    }
+
     if (isEditMode) {
       setFormData({
         accountNumber: accountNumberParam,
@@ -92,6 +101,7 @@ function AccountsPageContent() {
       setScreen('edit')
     }
   }, [
+    isAddMode,
     isEditMode,
     accountNumberParam,
     accountNameParam,
@@ -406,12 +416,22 @@ function AccountsPageContent() {
 
               {accounts.length === 0 && (
                 <div className={styles.accountCard}>
-                  <div className={styles.iconEdit} onClick={goToEdit}>
-                    ✏️
-                  </div>
-                  <div className={styles.iconDelete}>🗑️</div>
+                  <button
+                    className={styles.iconEdit}
+                    onClick={goToAdd}
+                    type="button"
+                  >
+                    Add
+                  </button>
+                  <button
+                    className={styles.iconDelete}
+                    onClick={goToAdd}
+                    type="button"
+                  >
+                    New
+                  </button>
                   <div className={styles.accountCardContent}>
-                    <h2 className={styles.accountName}>Anura</h2>
+                    <h2 className={styles.accountName}>No accounts yet</h2>
                     <div className={styles.accountAvatar}>
                       <Image
                         src="/account-logo.png"
@@ -422,13 +442,12 @@ function AccountsPageContent() {
                       />
                     </div>
                     <p className={styles.accountDetails}>
-                      Nova Bank <br />
-                      Colombo 05
+                      Add your first account <br />
+                      to start banking
                     </p>
                   </div>
                 </div>
               )}
-
               <button className={styles.addAccountCard} onClick={goToAdd}>
                 <h2 className={styles.addAccountTitle}>Add a Bank Account</h2>
                 <div className={styles.addAccountIcon}>+</div>
@@ -458,114 +477,133 @@ function AccountsPageContent() {
             </header>
 
             <div className={styles.formContainer}>
-              <div className={styles.formCard}>
-                <div className={styles.formHeader}>
-                  <h2 className={styles.formTitle}>Add Another Bank Account</h2>
+              <div className={styles.formGrid}>
+                <AccountCardPreview
+                  accountName={formData.nickname || formData.accountName}
+                  accountNumber={formData.accountNumber}
+                  branch={formData.accountName}
+                  label="New account"
+                />
+                <div className={styles.formCard}>
+                  <div className={styles.formHeader}>
+                    <h2 className={styles.formTitle}>
+                      Add Another Bank Account
+                    </h2>
+                  </div>
+
+                  <form
+                    onSubmit={handleAddAccount}
+                    className={styles.formFields}
+                  >
+                    <div className={styles.formGroup}>
+                      <label htmlFor="accountNumber">
+                        Bank Account Number:
+                      </label>
+                      <input
+                        type="text"
+                        id="accountNumber"
+                        name="accountNumber"
+                        value={formData.accountNumber}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Enter account number"
+                        className={
+                          errors.accountNumber ? styles.inputError : ''
+                        }
+                        required
+                      />
+                      {errors.accountNumber && (
+                        <span className={styles.fieldError}>
+                          {errors.accountNumber}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label htmlFor="accountName">Bank Account Name:</label>
+                      <input
+                        type="text"
+                        id="accountName"
+                        name="accountName"
+                        value={formData.accountName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Enter account holder name"
+                        className={errors.accountName ? styles.inputError : ''}
+                        required
+                      />
+                      {errors.accountName && (
+                        <span className={styles.fieldError}>
+                          {errors.accountName}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label htmlFor="email">Email:</label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Enter email address"
+                        className={errors.email ? styles.inputError : ''}
+                        required
+                      />
+                      {errors.email && (
+                        <span className={styles.fieldError}>
+                          {errors.email}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label htmlFor="nickname">Nickname:</label>
+                      <input
+                        type="text"
+                        id="nickname"
+                        name="nickname"
+                        value={formData.nickname}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Enter a nickname"
+                        className={errors.nickname ? styles.inputError : ''}
+                        required
+                      />
+                      {errors.nickname && (
+                        <span className={styles.fieldError}>
+                          {errors.nickname}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.formActionsBottom}>
+                      <button
+                        type="button"
+                        className={styles.btnCancel}
+                        onClick={handleCancel}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className={styles.btnAdd}
+                        disabled={loading}
+                      >
+                        {loading ? 'Adding...' : 'Add Account'}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.btnUpdate}
+                        onClick={handleUpdateAccount}
+                      >
+                        Update Account
+                      </button>
+                    </div>
+                  </form>
                 </div>
-
-                <form onSubmit={handleAddAccount} className={styles.formFields}>
-                  <div className={styles.formGroup}>
-                    <label htmlFor="accountNumber">Bank Account Number:</label>
-                    <input
-                      type="text"
-                      id="accountNumber"
-                      name="accountNumber"
-                      value={formData.accountNumber}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Enter account number"
-                      className={errors.accountNumber ? styles.inputError : ''}
-                      required
-                    />
-                    {errors.accountNumber && (
-                      <span className={styles.fieldError}>
-                        {errors.accountNumber}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="accountName">Bank Account Name:</label>
-                    <input
-                      type="text"
-                      id="accountName"
-                      name="accountName"
-                      value={formData.accountName}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Enter account holder name"
-                      className={errors.accountName ? styles.inputError : ''}
-                      required
-                    />
-                    {errors.accountName && (
-                      <span className={styles.fieldError}>
-                        {errors.accountName}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="email">Email:</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Enter email address"
-                      className={errors.email ? styles.inputError : ''}
-                      required
-                    />
-                    {errors.email && (
-                      <span className={styles.fieldError}>{errors.email}</span>
-                    )}
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="nickname">Nickname:</label>
-                    <input
-                      type="text"
-                      id="nickname"
-                      name="nickname"
-                      value={formData.nickname}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Enter a nickname"
-                      className={errors.nickname ? styles.inputError : ''}
-                      required
-                    />
-                    {errors.nickname && (
-                      <span className={styles.fieldError}>
-                        {errors.nickname}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className={styles.formActionsBottom}>
-                    <button
-                      type="button"
-                      className={styles.btnCancel}
-                      onClick={handleCancel}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className={styles.btnAdd}
-                      disabled={loading}
-                    >
-                      {loading ? 'Adding...' : 'Add Account'}
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.btnUpdate}
-                      onClick={handleUpdateAccount}
-                    >
-                      Update Account
-                    </button>
-                  </div>
-                </form>
               </div>
             </div>
           </>
@@ -592,51 +630,61 @@ function AccountsPageContent() {
             </header>
 
             <div className={styles.formContainer}>
-              <div className={styles.formCard}>
-                <div className={styles.formHeader}>
-                  <h2 className={styles.formTitle}>Edit the nickname</h2>
+              <div className={styles.formGrid}>
+                <AccountCardPreview
+                  accountName={nickname || formData.accountName}
+                  accountNumber={formData.accountNumber}
+                  branch={formData.accountName}
+                  label="Edit account"
+                />
+                <div className={styles.formCard}>
+                  <div className={styles.formHeader}>
+                    <h2 className={styles.formTitle}>Edit the nickname</h2>
+                  </div>
+
+                  <form
+                    onSubmit={handleEditNickname}
+                    className={styles.formFields}
+                  >
+                    <div className={styles.formGroup}>
+                      <label htmlFor="accountNumber">
+                        Bank Account Number:
+                      </label>
+                      <input
+                        type="text"
+                        id="accountNumber"
+                        value={formData.accountNumber || '1234567890'}
+                        disabled
+                        className={styles.inputDisabled}
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label htmlFor="nickname">Nickname:</label>
+                      <input
+                        type="text"
+                        id="nickname"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                        placeholder="Enter new nickname"
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.formActionsBottom}>
+                      <button
+                        type="button"
+                        className={styles.btnCancel}
+                        onClick={handleCancel}
+                      >
+                        Cancel
+                      </button>
+                      <button type="submit" className={styles.btnUpdate}>
+                        UPDATE
+                      </button>
+                    </div>
+                  </form>
                 </div>
-
-                <form
-                  onSubmit={handleEditNickname}
-                  className={styles.formFields}
-                >
-                  <div className={styles.formGroup}>
-                    <label htmlFor="accountNumber">Bank Account Number:</label>
-                    <input
-                      type="text"
-                      id="accountNumber"
-                      value={formData.accountNumber || '1234567890'}
-                      disabled
-                      className={styles.inputDisabled}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="nickname">Nickname:</label>
-                    <input
-                      type="text"
-                      id="nickname"
-                      value={nickname}
-                      onChange={(e) => setNickname(e.target.value)}
-                      placeholder="Enter new nickname"
-                      required
-                    />
-                  </div>
-
-                  <div className={styles.formActionsBottom}>
-                    <button
-                      type="button"
-                      className={styles.btnCancel}
-                      onClick={handleCancel}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className={styles.btnUpdate}>
-                      UPDATE
-                    </button>
-                  </div>
-                </form>
               </div>
             </div>
           </>
